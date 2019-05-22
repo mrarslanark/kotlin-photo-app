@@ -8,7 +8,6 @@ import android.widget.ImageView
 import android.widget.TextView
 import com.androidclub.photoapp.models.Photo
 import com.bumptech.glide.Glide
-import java.text.FieldPosition
 
 class MainAdapter(var photos: List<Photo>,
                   var clickListener: View.OnClickListener) :

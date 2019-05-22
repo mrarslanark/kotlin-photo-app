@@ -1,27 +1,56 @@
 package com.androidclub.photoapp
 
 import android.os.Bundle
-import android.support.design.widget.FloatingActionButton
-import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.Toolbar
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
+import com.androidclub.photoapp.api.PhotoRetriever
+import com.androidclub.photoapp.models.Photo
+import com.androidclub.photoapp.models.PhotoList
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), View.OnClickListener {
+
+    var photos : List<Photo>? = null
+    var mainAdapter: MainAdapter? = null
+    lateinit var recyclerView: RecyclerView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
 
-        val fab = findViewById<FloatingActionButton>(R.id.fab)
-        fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show()
+        recyclerView = findViewById(R.id.recyclerView) as RecyclerView
+        recyclerView.layoutManager = LinearLayoutManager(this)
+
+        val retriever = PhotoRetriever()
+        val callback = object : Callback<PhotoList> {
+            override fun onFailure(call: Call<PhotoList>, t: Throwable) {
+                Log.e("MainActivity", "Problems calling API", t)
+            }
+
+            override fun onResponse(call: Call<PhotoList>, response: Response<PhotoList>) {
+                response.isSuccessful.let {
+                    this@MainActivity.photos = response.body()?.hits
+                    mainAdapter = MainAdapter(this@MainActivity.photos!!,
+                            this@MainActivity)
+                    recyclerView.adapter = mainAdapter
+                }
+            }
         }
+        retriever.getPhotos(callback)
+    }
+
+    override fun onClick(view: View?) {
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
